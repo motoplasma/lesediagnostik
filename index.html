@@ -1,0 +1,1178 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+<!-- © 2026 Bernd Schüssele – Prompt-Builder. Nicht-kommerzielle Bildungsnutzung gestattet. -->
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Leseverständnis-Wizard - Prompt Builder</title>
+  <meta name="description" content="Adaptive HTML-UI zum Zusammenstellen eines Wizard-/Batch-Prompts für förderorientierte Lesediagnostik." />
+  <style>
+    :root{
+      --bg:#0b1020;
+      --muted:#92a2c7;
+      --text:#e9eeff;
+      --accent:#66e3ff;
+      --accent2:#7cff9a;
+      --danger:#ff6b6b;
+      --border:rgba(255,255,255,.12);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 800px at 15% 10%, rgba(102,227,255,.18), transparent 60%),
+                  radial-gradient(1000px 700px at 85% 20%, rgba(124,255,154,.12), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:28px 18px 36px;
+      display:grid;
+      gap:16px;
+    }
+    header{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 2px;
+    }
+    header h1{
+      margin:0;
+      font-size:clamp(18px, 2.3vw, 26px);
+      letter-spacing:.2px;
+    }
+    header .sub{
+      color:var(--muted);
+      font-size:14px;
+      max-width:78ch;
+      line-height:1.35;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap:16px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      border-radius:var(--radius);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background: rgba(0,0,0,.12);
+    }
+    .card .hd .title{
+      font-weight:700;
+      letter-spacing:.2px;
+      font-size:14px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .pill{
+      font-size:12px;
+      color:rgba(255,255,255,.9);
+      background:rgba(102,227,255,.12);
+      border:1px solid rgba(102,227,255,.25);
+      padding:3px 10px;
+      border-radius:999px;
+    }
+    .card .bd{ padding:16px; }
+
+    .progress{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .bar{
+      flex:1;
+      height:10px;
+      background: rgba(255,255,255,.07);
+      border:1px solid var(--border);
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .bar > div{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+
+    .q{
+      margin:0 0 10px;
+      font-size:16px;
+      line-height:1.3;
+      font-weight:700;
+    }
+    .hint{
+      margin:0 0 14px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    label{
+      display:block;
+      font-size:13px;
+      color:rgba(255,255,255,.9);
+      margin-bottom:8px;
+    }
+    select, textarea{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.25);
+      color:var(--text);
+      outline:none;
+      font-size:14px;
+    }
+    textarea{min-height:140px; resize:vertical; font-family:var(--sans);}
+
+    .btns{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+    }
+    button{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:650;
+      letter-spacing:.15px;
+      transition:.15s transform, .15s background;
+      min-width:110px;
+    }
+    button:hover{transform: translateY(-1px); background: rgba(255,255,255,.10);}
+    button.primary{
+      border-color: rgba(102,227,255,.35);
+      background: rgba(102,227,255,.12);
+    }
+    button.primary:hover{background: rgba(102,227,255,.16);}
+    button.danger{
+      border-color: rgba(255,107,107,.35);
+      background: rgba(255,107,107,.12);
+    }
+    button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      transform:none !important;
+    }
+
+    .mini{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .mini code{
+      font-family:var(--mono);
+      font-size:11px;
+      padding:2px 8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background: rgba(0,0,0,.22);
+      color: rgba(255,255,255,.9);
+    }
+
+    .mutedBlock{
+      border:1px dashed rgba(255,255,255,.18);
+      background: rgba(255,255,255,.03);
+      border-radius:16px;
+      padding:12px;
+      color: var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .promptWrap{ position:relative; }
+    pre{
+      margin:0;
+      white-space:pre-wrap;
+      word-break:break-word;
+      font-family:var(--mono);
+      font-size:12px;
+      line-height:1.4;
+      background: rgba(0,0,0,.28);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      max-height:560px;
+      overflow:auto;
+    }
+
+    .copyOverlay{
+      position:absolute;
+      top:12px;
+      right:12px;
+      z-index:3;
+      background: rgba(15, 25, 55, .92);
+      border:1px solid rgba(124,255,154,.28);
+      box-shadow: var(--shadow);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 8px 10px;
+      font-size: 12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      opacity:0;
+      transform: translateY(-4px);
+      pointer-events:none;
+      transition: .18s ease;
+    }
+    .copyOverlay.show{ opacity:1; transform: translateY(0); }
+    .copyOverlay .dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background: rgba(124,255,154,.95);
+      box-shadow: 0 0 0 8px rgba(124,255,154,.12);
+    }
+
+    .toast{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      background: rgba(15, 25, 55, .92);
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding:10px 12px;
+      border-radius:14px;
+      color: var(--text);
+      font-size: 13px;
+      opacity:0;
+      transform: translateY(8px);
+      transition:.2s;
+      pointer-events:none;
+    }
+    .toast.show{opacity:1; transform: translateY(0);}
+
+    .kvs{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:8px;
+      margin-top:10px;
+    }
+    .kv{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background: rgba(0,0,0,.18);
+      font-size:13px;
+      align-items:flex-start;
+    }
+    .kv b{font-weight:750}
+    .kv span{color:rgba(255,255,255,.9); text-align:right; white-space:pre-wrap}
+
+    .statusPill{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:rgba(255,255,255,.9);
+      background:rgba(124,255,154,.10);
+      border:1px solid rgba(124,255,154,.22);
+      padding:3px 10px;
+      border-radius:999px;
+      user-select:none;
+    }
+    .statusPill .dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background: rgba(146,162,199,.9);
+      box-shadow: 0 0 0 0 rgba(124,255,154,.0);
+    }
+    .statusPill.flash .dot{
+      background: rgba(124,255,154,.95);
+      box-shadow: 0 0 0 8px rgba(124,255,154,.15);
+      transition: box-shadow .35s ease, background .35s ease;
+    }
+    .statusText{ color:rgba(255,255,255,.9); }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Leseverständnis-Wizard → Prompt Builder</h1>
+        <div class="sub"> (von Bernd Schüssele)
+	<div>
+          Auf Basis deiner Eingaben erzeugt die Oberfläche automatisch einen kopierbaren Prompt.
+Diesen kannst du in einen Chatbot einfügen.
+
+Der Chatbot erstellt anschließend unmittelbar die Materialien für die diagnostische Durchführung entsprechend der gewählten Parameter.
+        </div>
+      </div>
+    
+    </header>
+
+    <div class="grid">
+      <!-- LEFT -->
+      <section class="card" aria-labelledby="wizardTitle">
+        <div class="hd">
+          <div class="title" id="wizardTitle">
+            Wizard
+            <span class="pill" id="stepPill">Schritt</span>
+          </div>
+          <div class="progress" aria-label="Fortschritt">
+            <div class="bar" aria-hidden="true"><div id="progFill"></div></div>
+            <div id="progText">0%</div>
+          </div>
+        </div>
+
+        <div class="bd">
+          <h2 class="q" id="qText">…</h2>
+          <p class="hint" id="qHint">…</p>
+
+          <div id="inputArea"></div>
+
+          <div class="btns">
+            <button id="backBtn" type="button">Zurück</button>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button id="resetBtn" class="danger" type="button">Reset</button>
+              <button id="nextBtn" class="primary" type="button">Weiter</button>
+            </div>
+          </div>
+
+          <div style="margin-top:10px" class="mini">
+            <span>Tipp: Änderungen werden automatisch gespeichert.</span>
+            <code id="branchBadge">Branch: –</code>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT -->
+      <aside class="card" aria-labelledby="previewTitle">
+        <div class="hd">
+          <div class="title" id="previewTitle">
+            Prompt (Vorschau)
+            <span class="statusPill" id="statusPill" title="Zeigt an, wann der Prompt zuletzt aktualisiert wurde">
+              <span class="dot" aria-hidden="true"></span>
+              <span class="statusText" id="statusText">bereit</span>
+            </span>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="copyBtn" class="primary" type="button">Prompt kopieren</button>
+            <button id="downloadBtn" type="button">Als .txt speichern</button>
+          </div>
+        </div>
+
+        <div class="bd">
+          <div class="mutedBlock">
+            Der generierte Prompt enthält einen <b>PARAMETERBLOCK_FINAL</b>. Dadurch soll der Chatbot <b>ohne Rückfragen</b> direkt <b>PHASE 2 – AUSGABE</b> liefern.
+          </div>
+          <div style="height:10px"></div>
+
+          <div class="promptWrap">
+            <div class="copyOverlay" id="copyOverlay" aria-live="polite" role="status">
+              <span class="dot" aria-hidden="true"></span>
+              <span id="copyOverlayText">Kopiert ✓</span>
+            </div>
+            <pre id="promptBox" aria-label="Prompt Text"></pre>
+          </div>
+
+          <div style="height:12px"></div>
+          <div class="mini">
+            <span>Copy nutzt <code>navigator.clipboard</code> (HTTPS) und hat ein Fallback.</span>
+          </div>
+
+          <div style="height:14px"></div>
+          <div class="kvs" id="summaryKvs" aria-label="Zusammenfassung"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<footer class="card" style="padding:12px 16px; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+  <span style="color: var(--muted); font-size:13px;">
+    © <span id="year"></span> <span id="owner">Dr. Bernd Schüssele</span> – Alle Rechte vorbehalten.
+  </span>
+
+  <span style="color: var(--muted); font-size:13px;">
+    Kontakt:
+    <a href="mailto:bernd.schuessele@gs-og.seminar-bw.de" style="color: var(--accent); text-decoration:none; font-weight:650;">
+      bernd.schuessele@gs-og.seminar-bw.de
+    </a>
+  </span>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  const STORAGE_KEY = "lvw_prompt_builder_v2";
+
+  const OPTIONS = {
+    klasse: [
+      {value:"1", label:"Klasse 1"},
+      {value:"2", label:"Klasse 2"},
+      {value:"3", label:"Klasse 3"},
+      {value:"4", label:"Klasse 4"},
+    ],
+    textquelle: [
+      {value:"A", label:"A – Text generieren"},
+      {value:"B", label:"B – Text eingeben"},
+    ],
+    lebenswelt: [
+      "Schule & Alltag",
+      "Freizeit & Hobbys",
+      "Familie & Freunde",
+      "Tiere & Natur",
+      "Sport",
+      "Jahreszeiten & Feste",
+      "Technik & Medien",
+      "Region Baden-Württemberg",
+    ],
+    textart: [
+      "Erzählung",
+      "Sachtext",
+      "Dialog",
+      "Brief/E-Mail",
+      "Märchen-/Fabel-Elemente",
+      "Anleitung (leicht)",
+    ],
+    zeitLaenge: [
+      "Kurz (ca. 5–8 Min.)",
+      "Mittel (ca. 10–15 Min.)",
+      "Lang (ca. 20+ Min.)",
+    ],
+    diagnosemodus: [
+      "Screening (kurz, breit)",
+      "Förderdiagnostik (tiefer, förderorientiert)",
+      "Verlaufsdiagnostik (vergleichbar über Zeit)",
+    ],
+    lesestand: [
+      "deutlich unter Erwartung",
+      "unter Erwartung",
+      "im Erwartungsbereich",
+      "über Erwartung",
+      "heterogen/unklar",
+    ],
+    sprachbedingungen: [
+      "DaZ/DaF berücksichtigen",
+      "Sprachsensibel (einfacher Wortschatz, kurze Sätze)",
+      "Gemischt: differenzierte Sprachstufen",
+      "Keine besonderen Hinweise",
+    ],
+    aufgabenformate: [
+      "Multiple Choice",
+      "Kurzantwort",
+      "Markieren/Zuordnen",
+      "Lückentext",
+      "Freie Antwort (kurz)",
+    ],
+    schwerpunkt: [
+      "Wortschatz & Satzverstehen",
+      "Explizite Informationen (Stufe I/II)",
+      "Inferenzen (Stufe III)",
+      "Reflexion/Bewertung (Stufe IV)",
+      "Gemischt",
+    ],
+    vergleichbarkeit: [
+      "hoch (sehr ähnlich in Aufbau & Schwierigkeit)",
+      "mittel (ähnliche Struktur, variierende Details)",
+      "gering (freie Variation)",
+    ],
+    profile: [
+      {value:"ja", label:"Ja"},
+      {value:"nein", label:"Nein"},
+    ],
+  };
+
+  function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch{ return null; }
+  }
+
+  let state = loadState() ?? {
+    answers: {
+      klasse: "",
+      textquelle: "",
+      lebenswelt: "",
+      textart: "",
+      zeitLaenge: "",
+      textB: "",
+      diagnosemodus: "",
+      lesestand: "",
+      sprachbedingungen: "",
+      aufgabenformate: [],
+      schwerpunkt: "",
+      vergleichbarkeit: "",
+      profile: "nein",
+    },
+    stepIndex: 0,
+  };
+
+  // Step factories
+  const stepSelect = (key, title, hint, options, extra={}) => ({ type:"select", key, title, hint, options, ...extra });
+  const stepSelectKV = (key, title, hint, options, extra={}) => ({ type:"selectkv", key, title, hint, options, ...extra });
+  const stepTextarea = (key, title, hint, extra={}) => ({ type:"textarea", key, title, hint, ...extra });
+  const stepMultiSelect = (key, title, hint, options, extra={}) => ({ type:"multiselect", key, title, hint, options, ...extra });
+  const stepConfirm = (title, question, hint) => ({ type:"confirm", title, question, hint });
+
+  function getSteps(answers){
+    const base = [
+      stepSelectKV("klasse", "Schritt 1/9 – Klassenstufe", "Für welche Klassenstufe (1–4)?", OPTIONS.klasse),
+      stepSelectKV("textquelle", "Schritt 2/9 – Textquelle", "A = Text generieren, B = Text eingeben", OPTIONS.textquelle),
+    ];
+
+    const branchA = [
+      stepSelect("lebenswelt", "Schritt A3 – Lebensweltbezug", "Wähle einen Lebensweltbezug.", OPTIONS.lebenswelt),
+      stepSelect("textart", "Schritt A4 – Textart", "Welche Textart soll generiert werden?", OPTIONS.textart),
+      stepSelect("zeitLaenge", "Schritt A5 – Zeit & Länge", "Welche Bearbeitungszeit/Länge ist geplant?", OPTIONS.zeitLaenge),
+    ];
+
+    const branchB = [
+      stepTextarea("textB", "Schritt B3 – Text einfügen", "Füge hier den Lesetext ein (unverändert). Keine personenbezogenen Daten.", {
+        placeholder: "Hier den Text einfügen …",
+        minChars: 50,
+      }),
+    ];
+
+    const common = [
+      stepSelect("diagnosemodus", "Schritt 3/9 – Diagnosemodus", "Wie soll das Verfahren eingesetzt werden?", OPTIONS.diagnosemodus),
+      stepSelect("lesestand", "Schritt 4/9 – Lesestand", "Wie ist der ungefähre Lesestand (ohne Diagnose/Noten)?", OPTIONS.lesestand),
+      stepSelect("sprachbedingungen", "Schritt 5/9 – Sprachliche Bedingungen", "Welche sprachlichen Bedingungen sollen berücksichtigt werden?", OPTIONS.sprachbedingungen),
+      stepMultiSelect("aufgabenformate", "Schritt 6/9 – Aufgabenformate", "Welche Aufgabenformate sind gewünscht? (Mehrfachauswahl)", OPTIONS.aufgabenformate),
+      stepSelect("schwerpunkt", "Schritt 7/9 – Schwerpunkt", "Worauf soll der Schwerpunkt liegen?", OPTIONS.schwerpunkt),
+      stepSelect("vergleichbarkeit", "Schritt 8/9 – Vergleichbarkeit", "Falls Verlaufsdiagnostik: Wie wichtig ist Vergleichbarkeit über Zeit?", OPTIONS.vergleichbarkeit, {
+        showIf: () => answers.diagnosemodus?.toLowerCase().includes("verlauf"),
+      }),
+      stepSelectKV("profile", "Schritt 9/9 – Individuelle Profile", "Individuelle Profile (ja/nein)?", OPTIONS.profile),
+      stepConfirm("Parameter-Check", "Passt das so?", "Bitte prüfe deine Parameter. Mit „Fertig“ wird der Prompt kopiert."),
+    ];
+
+    const tq = answers.textquelle;
+    if(tq === "A") return [...base, ...branchA, ...common];
+    if(tq === "B") return [...base, ...branchB, ...common];
+    return [...base, ...common];
+  }
+
+  // Elements
+  const el = {
+    qText: document.getElementById("qText"),
+    qHint: document.getElementById("qHint"),
+    inputArea: document.getElementById("inputArea"),
+    backBtn: document.getElementById("backBtn"),
+    nextBtn: document.getElementById("nextBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    copyBtn: document.getElementById("copyBtn"),
+    downloadBtn: document.getElementById("downloadBtn"),
+    promptBox: document.getElementById("promptBox"),
+    stepPill: document.getElementById("stepPill"),
+    progFill: document.getElementById("progFill"),
+    progText: document.getElementById("progText"),
+    toast: document.getElementById("toast"),
+    branchBadge: document.getElementById("branchBadge"),
+    summaryKvs: document.getElementById("summaryKvs"),
+    statusPill: document.getElementById("statusPill"),
+    statusText: document.getElementById("statusText"),
+    copyOverlay: document.getElementById("copyOverlay"),
+    copyOverlayText: document.getElementById("copyOverlayText"),
+  };
+
+  function toast(msg, kind="ok"){
+    el.toast.textContent = msg;
+    el.toast.style.borderColor = kind==="bad" ? "rgba(255,107,107,.5)" : "rgba(102,227,255,.35)";
+    el.toast.classList.add("show");
+    setTimeout(()=> el.toast.classList.remove("show"), 1800);
+  }
+
+  let statusTimer = null;
+  function setStatus(text, flash=false){
+    if(el.statusText) el.statusText.textContent = text;
+    if(flash && el.statusPill){
+      el.statusPill.classList.remove("flash");
+      void el.statusPill.offsetWidth;
+      el.statusPill.classList.add("flash");
+      clearTimeout(statusTimer);
+      statusTimer = setTimeout(() => el.statusPill.classList.remove("flash"), 450);
+    }
+  }
+
+  let overlayTimer = null;
+  function showCopyOverlay(message="Kopiert ✓"){
+    if(!el.copyOverlay) return;
+    el.copyOverlayText.textContent = message;
+    el.copyOverlay.classList.add("show");
+    clearTimeout(overlayTimer);
+    overlayTimer = setTimeout(() => el.copyOverlay.classList.remove("show"), 1200);
+  }
+
+  function currentSteps(){
+    const steps = getSteps(state.answers);
+    return steps.filter(s => typeof s.showIf === "function" ? !!s.showIf() : true);
+  }
+  function effectiveStepCount(){ return getSteps(state.answers).length; }
+  function isLastStepVisible(){
+    const steps = currentSteps();
+    return state.stepIndex >= steps.length - 1;
+  }
+  function getAbsoluteIndex(visibleStep){
+    const all = getSteps(state.answers);
+    const i = all.findIndex(s => s.title === visibleStep.title && s.type === visibleStep.type && s.key === visibleStep.key);
+    return i >= 0 ? i : state.stepIndex;
+  }
+
+  function refreshPromptPreview(){
+    el.promptBox.textContent = buildPrompt(state.answers);
+    const t = new Date();
+    const hh = String(t.getHours()).padStart(2,"0");
+    const mm = String(t.getMinutes()).padStart(2,"0");
+    const ss = String(t.getSeconds()).padStart(2,"0");
+    setStatus(`aktualisiert ${hh}:${mm}:${ss}`, true);
+  }
+
+  function kv(k, v){
+    const d = document.createElement("div");
+    d.className = "kv";
+    const left = document.createElement("b");
+    left.textContent = k;
+    const right = document.createElement("span");
+    right.textContent = v;
+    d.appendChild(left); d.appendChild(right);
+    return d;
+  }
+
+  function renderRightSummary(){
+    const s = state.answers;
+    el.summaryKvs.innerHTML = "";
+    el.summaryKvs.appendChild(kv("Klasse", s.klasse || "—"));
+    el.summaryKvs.appendChild(kv("Textquelle", s.textquelle || "—"));
+    el.summaryKvs.appendChild(kv("Diagnosemodus", s.diagnosemodus || "—"));
+    el.summaryKvs.appendChild(kv("Schwerpunkt", s.schwerpunkt || "—"));
+  }
+
+  function renderSummaryBlock(){
+    const s = state.answers;
+    const div = document.createElement("div");
+    div.className = "kvs";
+
+    div.appendChild(kv("Klasse", s.klasse || "—"));
+    div.appendChild(kv("Textquelle", s.textquelle || "—"));
+
+    if(s.textquelle === "A"){
+      div.appendChild(kv("Lebensweltbezug", s.lebenswelt || "—"));
+      div.appendChild(kv("Textart", s.textart || "—"));
+      div.appendChild(kv("Zeit & Länge", s.zeitLaenge || "—"));
+    } else if(s.textquelle === "B"){
+      div.appendChild(kv("Text (B)", (s.textB?.trim() ? `✓ eingefügt (${s.textB.trim().length} Zeichen)` : "—")));
+    }
+
+    div.appendChild(kv("Diagnosemodus", s.diagnosemodus || "—"));
+    div.appendChild(kv("Lesestand", s.lesestand || "—"));
+    div.appendChild(kv("Sprachliche Bedingungen", s.sprachbedingungen || "—"));
+    div.appendChild(kv("Aufgabenformate", (s.aufgabenformate?.length ? s.aufgabenformate.join(", ") : "—")));
+    div.appendChild(kv("Schwerpunkt", s.schwerpunkt || "—"));
+
+    if(s.diagnosemodus?.toLowerCase().includes("verlauf")){
+      div.appendChild(kv("Vergleichbarkeit", s.vergleichbarkeit || "—"));
+    } else {
+      div.appendChild(kv("Vergleichbarkeit", "— (nicht relevant)"));
+    }
+
+    div.appendChild(kv("Individuelle Profile", s.profile || "—"));
+
+    const info = document.createElement("div");
+    info.className = "mutedBlock";
+    info.style.marginTop = "10px";
+    info.innerHTML = `Wenn etwas nicht passt: <b>Zurück</b> und ändern.`;
+
+    const out = document.createElement("div");
+    out.appendChild(div);
+    out.appendChild(info);
+    return out;
+  }
+
+  function renderInput(step){
+    const wrap = document.createElement("div");
+
+    if(step.type === "select" || step.type === "selectkv"){
+      const label = document.createElement("label");
+      label.textContent = "Auswahl";
+      const select = document.createElement("select");
+      select.setAttribute("aria-label", step.title);
+
+      const ph = document.createElement("option");
+      ph.value = "";
+      ph.textContent = "Bitte auswählen …";
+      select.appendChild(ph);
+
+      const opts = step.options;
+      if(opts.length && typeof opts[0] === "string"){
+        for(const v of opts){
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = v;
+          select.appendChild(o);
+        }
+      }else{
+        for(const o2 of opts){
+          const o = document.createElement("option");
+          o.value = o2.value;
+          o.textContent = o2.label;
+          select.appendChild(o);
+        }
+      }
+
+      select.value = state.answers[step.key] ?? "";
+      select.addEventListener("change", () => {
+        state.answers[step.key] = select.value;
+
+        if(step.key === "textquelle"){
+          if(select.value === "A"){
+            state.answers.textB = "";
+          } else if(select.value === "B"){
+            state.answers.lebenswelt = "";
+            state.answers.textart = "";
+            state.answers.zeitLaenge = "";
+          }
+          state.stepIndex = Math.min(state.stepIndex, 1);
+        }
+
+        render();
+      });
+
+      wrap.appendChild(label);
+      wrap.appendChild(select);
+    }
+
+    if(step.type === "textarea"){
+      const label = document.createElement("label");
+      label.textContent = "Text";
+      const ta = document.createElement("textarea");
+      ta.placeholder = step.placeholder ?? "";
+      ta.value = state.answers[step.key] ?? "";
+      ta.addEventListener("input", () => {
+        state.answers[step.key] = ta.value;
+        renderRightSummary();
+        refreshPromptPreview();
+        saveState();
+      });
+      wrap.appendChild(label);
+      wrap.appendChild(ta);
+
+      const min = step.minChars ?? 0;
+      if(min > 0){
+        const help = document.createElement("div");
+        help.className = "mini";
+        help.style.marginTop = "8px";
+        help.textContent = `Mindestlänge: ${min} Zeichen (aktuell: ${(ta.value||"").length})`;
+        ta.addEventListener("input", () => {
+          help.textContent = `Mindestlänge: ${min} Zeichen (aktuell: ${(ta.value||"").length})`;
+        });
+        wrap.appendChild(help);
+      }
+    }
+
+    if(step.type === "multiselect"){
+      const label = document.createElement("label");
+      label.textContent = "Mehrfachauswahl";
+      wrap.appendChild(label);
+
+      const chosen = new Set(state.answers[step.key] ?? []);
+      const box = document.createElement("div");
+      box.className = "mutedBlock";
+      box.style.color = "rgba(255,255,255,.92)";
+      box.style.background = "rgba(0,0,0,.18)";
+      box.style.borderStyle = "solid";
+
+      const list = document.createElement("div");
+      list.style.display = "grid";
+      list.style.gridTemplateColumns = "1fr 1fr";
+      list.style.gap = "8px";
+      list.style.marginTop = "6px";
+
+      step.options.forEach(opt => {
+        const item = document.createElement("label");
+        item.style.display = "flex";
+        item.style.gap = "8px";
+        item.style.alignItems = "flex-start";
+        item.style.margin = "0";
+        item.style.cursor = "pointer";
+
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = chosen.has(opt);
+        cb.addEventListener("change", () => {
+          if(cb.checked) chosen.add(opt); else chosen.delete(opt);
+          state.answers[step.key] = [...chosen];
+          renderRightSummary();
+          refreshPromptPreview();
+          saveState();
+        });
+
+        const txt = document.createElement("span");
+        txt.textContent = opt;
+
+        item.appendChild(cb);
+        item.appendChild(txt);
+        list.appendChild(item);
+      });
+
+      box.innerHTML = `<div class="mini">Ausgewählt: <code>${[...chosen].join(" | ") || "—"}</code></div>`;
+      box.appendChild(list);
+      wrap.appendChild(box);
+    }
+
+    return wrap;
+  }
+
+  function validateStep(step){
+    const a = state.answers;
+    if(step.type === "confirm") return true;
+
+    if(step.type === "select" || step.type === "selectkv"){
+      const v = (a[step.key] ?? "").toString().trim();
+      if(!v) return { ok:false, msg:"Bitte eine Option auswählen." };
+      return true;
+    }
+    if(step.type === "textarea"){
+      const v = (a[step.key] ?? "").toString().trim();
+      const min = step.minChars ?? 0;
+      if(!v) return { ok:false, msg:"Bitte Text einfügen." };
+      if(min && v.length < min) return { ok:false, msg:`Bitte mindestens ${min} Zeichen einfügen.` };
+      return true;
+    }
+    if(step.type === "multiselect"){
+      const arr = a[step.key] ?? [];
+      if(!Array.isArray(arr) || arr.length === 0) return { ok:false, msg:"Bitte mindestens ein Format auswählen." };
+      return true;
+    }
+    return true;
+  }
+
+  async function copyPrompt(){
+    const text = el.promptBox.textContent || "";
+    try{
+      await navigator.clipboard.writeText(text);
+      toast("Prompt kopiert.");
+      showCopyOverlay("Kopiert ✓");
+      return true;
+    }catch{
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      try{
+        document.execCommand("copy");
+        toast("Prompt kopiert (Fallback).");
+        showCopyOverlay("Kopiert ✓ (Fallback)");
+        return true;
+      }catch{
+        toast("Kopieren nicht möglich. Bitte manuell markieren.", "bad");
+        showCopyOverlay("Kopieren fehlgeschlagen");
+        return false;
+      }finally{
+        document.body.removeChild(ta);
+      }
+    }
+  }
+
+  function downloadTxt(){
+    const text = el.promptBox.textContent || "";
+    const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "leseverstaendnis_prompt.txt";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast("TXT gespeichert.");
+  }
+
+  async function goNext(){
+    const steps = currentSteps();
+    const step = steps[state.stepIndex];
+    const valid = validateStep(step);
+    if(valid !== true){
+      toast(valid.msg || "Bitte Eingabe prüfen.", "bad");
+      return;
+    }
+
+    if(isLastStepVisible()){
+      refreshPromptPreview();
+      const ok = await copyPrompt();
+      if(ok) setStatus("kopiert ✓", true);
+      return;
+    }
+
+    state.stepIndex++;
+    render();
+  }
+
+  function goBack(){
+    state.stepIndex = Math.max(0, state.stepIndex - 1);
+    render();
+  }
+
+  function resetAll(){
+    localStorage.removeItem(STORAGE_KEY);
+    state = {
+      answers: {
+        klasse: "",
+        textquelle: "",
+        lebenswelt: "",
+        textart: "",
+        zeitLaenge: "",
+        textB: "",
+        diagnosemodus: "",
+        lesestand: "",
+        sprachbedingungen: "",
+        aufgabenformate: [],
+        schwerpunkt: "",
+        vergleichbarkeit: "",
+        profile: "nein",
+      },
+      stepIndex: 0,
+    };
+    render();
+    toast("Zurückgesetzt.");
+  }
+
+  function render(){
+    const steps = currentSteps();
+    const allCount = Math.max(1, effectiveStepCount());
+    const idx = Math.min(state.stepIndex, steps.length - 1);
+    state.stepIndex = Math.max(0, idx);
+
+    const step = steps[state.stepIndex];
+
+    el.stepPill.textContent = step?.title ?? "—";
+
+    const prog = Math.round(((getAbsoluteIndex(step) + 1) / allCount) * 100);
+    el.progFill.style.width = `${Math.max(0, Math.min(100, prog))}%`;
+    el.progText.textContent = `${Math.max(0, Math.min(100, prog))}%`;
+
+    el.branchBadge.textContent = `Branch: ${state.answers.textquelle || "—"}`;
+
+    el.inputArea.innerHTML = "";
+    if(step.type === "confirm"){
+      el.qText.textContent = step.question;
+      el.qHint.textContent = step.hint;
+      el.inputArea.appendChild(renderSummaryBlock());
+    } else {
+      el.qText.textContent = step.title;
+      el.qHint.textContent = step.hint;
+      el.inputArea.appendChild(renderInput(step));
+    }
+
+    el.backBtn.disabled = state.stepIndex === 0;
+    el.nextBtn.textContent = isLastStepVisible() ? "Fertig" : "Weiter";
+
+    refreshPromptPreview();
+    renderRightSummary();
+    saveState();
+  }
+
+  function escapePromptText(s){
+    // keep prompt readable; just normalize to string
+    return (s ?? "").toString();
+  }
+
+  function buildPrompt(a){
+    // IMPORTANT: This prompt is designed to output PHASE 2 immediately because PARAMETERBLOCK_FINAL is present.
+    const klasse = escapePromptText(a.klasse || "—");
+    const textquelle = escapePromptText(a.textquelle || "—");
+    const lebenswelt = escapePromptText(a.lebenswelt || "—");
+    const textart = escapePromptText(a.textart || "—");
+    const zeitLaenge = escapePromptText(a.zeitLaenge || "—");
+    const textB = escapePromptText((a.textB || "").trim() || "— (kein Text eingefügt)");
+    const diagnosemodus = escapePromptText(a.diagnosemodus || "—");
+    const lesestand = escapePromptText(a.lesestand || "—");
+    const sprachbedingungen = escapePromptText(a.sprachbedingungen || "—");
+    const aufgabenformate = (Array.isArray(a.aufgabenformate) && a.aufgabenformate.length)
+      ? a.aufgabenformate.map(escapePromptText).join(", ")
+      : "—";
+    const schwerpunkt = escapePromptText(a.schwerpunkt || "—");
+    const vergleichbarkeit = escapePromptText(a.vergleichbarkeit || "—");
+    const profile = escapePromptText(a.profile || "—");
+
+    const lines = [];
+
+    lines.push(
+`Rolle
+Du bist Expert:in für förderorientierte Lesediagnostik in der Grundschule (Baden-Württemberg).
+Du arbeitest kompetenzorientiert, evidenzsensibel, fair und transparent.
+Du vergibst keine Noten und stellst keine Diagnosen.
+Du ersetzt keine standardisierten Tests. Grenzen markierst du klar.
+
+Datenschutz
+- Keine personenbezogenen Daten.
+- Individuelle Auswertungen nur mit anonymen Kennungen.
+
+WICHTIG: EXECUTION RULE (Überschreibt den Wizard)
+Wenn im Prompt ein Block „PARAMETERBLOCK_FINAL“ enthalten ist, dann gilt:
+1) Stelle KEINE Rückfragen und starte NICHT den Wizard.
+2) Überspringe PHASE 1 vollständig.
+3) Führe direkt PHASE 2 – AUSGABE aus und nutze ausschließlich die Parameter aus „PARAMETERBLOCK_FINAL“.
+4) Nur wenn Parameter logisch widersprüchlich/leer sind, darfst du maximal 1 Rückfrage stellen. Ansonsten: keine Fragen.
+
+Arbeitsmodus – Wizard (nur falls PARAMETERBLOCK_FINAL NICHT vorhanden ist)
+- Immer genau EINE Frage pro Nachricht.
+- Warte Antwort ab.
+- Bei Unklarheit: max. 1 Rückfrage.
+- Keine Materialien erzeugen, bevor Parameter bestätigt sind.
+
+Ziel
+Erstelle ein stufenlogisches, adaptives Leseverständnis-Verfahren
+(IGLU-/HLT-orientiert: Stufe I–IV).
+Das Verfahren ist vollständig adaptiv – unabhängig davon, ob der Text generiert (A) oder eingegeben (B) wird.`
+    );
+
+    lines.push(
+`\n────────────────────────────
+PARAMETERBLOCK_FINAL (aus der UI – verbindlich)
+────────────────────────────
+Klassenstufe: ${klasse}
+Textquelle: ${textquelle}   (A=generieren | B=eingegeben)
+
+Wenn Textquelle=A:
+- Lebensweltbezug: ${lebenswelt}
+- Textart: ${textart}
+- Zeit & Länge: ${zeitLaenge}
+
+Wenn Textquelle=B:
+- Text (unverändert):
+<<<TEXT_B_START>>>
+${textB}
+<<<TEXT_B_END>>>
+
+Diagnosemodus: ${diagnosemodus}
+Lesestand: ${lesestand}
+Sprachliche Bedingungen: ${sprachbedingungen}
+Aufgabenformate: ${aufgabenformate}
+Schwerpunkt: ${schwerpunkt}
+Vergleichbarkeit (nur falls Verlaufsdiagnostik): ${vergleichbarkeit}
+Individuelle Profile: ${profile}`
+    );
+
+    lines.push(
+`\n────────────────────────────
+PHASE 2 – AUSGABE (sofort ausführen, wenn PARAMETERBLOCK_FINAL vorhanden)
+────────────────────────────
+
+1) Ziel & Rahmen
+
+2) TEXTPROFIL (immer!)
+   - Wortanzahl
+   - Satzstruktur (kurz/mittel/komplex)
+   - Schwierigkeitstreiber
+   - implizite Anforderungen
+   - Passung zur Klassenstufe
+   - geplante Scaffolds
+   Bei A: Profil begründet die Textkonstruktion.
+   Bei B: Profil analysiert den vorhandenen Text.
+
+3) Lesetext
+   - Bei B unverändert
+   - Bei A generiert, streng angepasst
+
+4) Aufgaben nach Kompetenzstufen I–IV
+   - Anzahl adaptiv nach Zeit + Lesestand
+   - Verteilung explizit dokumentieren
+   - Schreiblast adaptiv steuern
+
+5) Erwartungshorizont
+
+6) Auswertungsraster
+   - Punkte pro Stufe
+   - vorsichtige Schwellenlogik
+   - Hinweis auf mögliche Einflussfaktoren durch Textprofil
+
+7) Typische Fehlermuster je Stufe
+
+8) Kompetenzinterpretation
+   (ohne Noten, ohne Normierung)
+
+9) Förderimpulse
+   - stufenbezogen
+   - sprachsensibel
+   - textprofilsensibel
+
+10) Differenzierung
+
+11) Optional: Individuelles Kompetenzprofil je Kind (nur wenn PROFILE=ja)
+
+12) Grenzen KI-gestützter Diagnostik`
+    );
+
+    return lines.join("\n");
+  }
+
+  // Events
+  el.nextBtn.addEventListener("click", goNext);
+  el.backBtn.addEventListener("click", goBack);
+  el.resetBtn.addEventListener("click", resetAll);
+  el.copyBtn.addEventListener("click", async () => {
+    refreshPromptPreview();
+    const ok = await copyPrompt();
+    if(ok) setStatus("kopiert ✓", true);
+  });
+  el.downloadBtn.addEventListener("click", downloadTxt);
+
+  document.addEventListener("keydown", (e) => {
+    if(e.key === "Enter"){
+      const active = document.activeElement;
+      if(active && active.tagName === "TEXTAREA") return;
+      if(active && active.tagName === "SELECT") return;
+      goNext();
+    }
+  });
+
+  window.addEventListener("error", (e) => {
+    toast("JavaScript-Fehler: Bitte Konsole prüfen.", "bad");
+    console.error(e.error || e.message);
+  });
+
+  // Init
+  render();
+})();
+</script>
+</body>
+</html>
